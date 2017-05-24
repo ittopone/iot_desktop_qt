@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+		body, html {width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+		#allmap{width:100%;height:100%;}
+		p{margin-left:5px; font-size:14px;}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=F37hUrKTh9b4dFayzoIWV736KpZLrYAe"></script>
+	<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+	<title>百度地图</title>
+</head>
+<body>
+	<div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+	// 百度地图API功能	
+	map = new BMap.Map("allmap");
+	map.centerAndZoom(new BMap.Point(113.343936, 23.30327), 15);
+	map.enableScrollWheelZoom();                            //启用滚轮放大缩小
+
+	// 添加带有定位的导航控件
+  var navigationControl = new BMap.NavigationControl({
+    // 靠左上角位置
+    anchor: BMAP_ANCHOR_TOP_LEFT,
+    // LARGE类型
+    type: BMAP_NAVIGATION_CONTROL_LARGE,
+    // 启用显示定位
+    enableGeolocation: true
+  });
+  map.addControl(navigationControl);
+  // 添加定位控件
+  var geolocationControl = new BMap.GeolocationControl();
+  geolocationControl.addEventListener("locationSuccess", function(e){
+    // 定位成功事件
+    var address = '';
+    address += e.addressComponent.province;
+    address += e.addressComponent.city;
+    address += e.addressComponent.district;
+    address += e.addressComponent.street;
+    address += e.addressComponent.streetNumber;
+    alert("当前定位地址为：" + address);
+  });
+  geolocationControl.addEventListener("locationError",function(e){
+    // 定位失败事件
+    alert(e.message);
+  });
+  map.addControl(geolocationControl);
+
+
+	//添加锁信息窗口
+	var opts = {
+				width : 350,     // 信息窗口宽度
+				height: 230,     // 信息窗口高度
+				//title : "锁具信息" , // 信息窗口标题
+				enableMessage:true//设置允许信息窗发送短息
+			   };
+
+			   //添加锁日志窗口
+	var opts1 = {
+				width : 380,     // 信息窗口宽度
+				height: 300,     // 信息窗口高度
+				//title : "开锁记录" , // 信息窗口标题
+				enableMessage:true//设置允许信息窗发送短息
+			   };
+
+	//var marker = new BMap.Marker(new BMap.Point(113.924106,22.662347));  // 创建标注
+		//map.addOverlay(marker);               // 将标注添加到地图中
+
+	var myIcon;
+	function getIconPath(iconPath)
+	{
+		myIcon = new BMap.Icon(iconPath, new BMap.Size(23, 25), {  
+                        anchor: new BMap.Size(10, 13)  
+                    });  
+	}
+
+	function markLockOnBaiduMap(jingdu,weidu,lockContent)
+	{
+		var marker = new BMap.Marker(new BMap.Point(jingdu,weidu),{icon:myIcon});  // 创建标注
+		var content = lockContent;
+		map.addOverlay(marker);               // 将标注添加到地图中
+
+		var openRecord = function(e,ee,marker){
+		//添加处理日志查看的方法
+		var point = marker.getPosition();
+		var content =  MainWindow.jsInvokQt(point.lng,point.lat);
+		var infoWindow = new BMap.InfoWindow(content,opts1);  // 创建信息窗口对象 
+		map.openInfoWindow(infoWindow,point); //开启信息窗口
+	}
+	//创建右键菜单
+	var markerMenu=new BMap.ContextMenu();
+	markerMenu.addItem(new BMap.MenuItem('查看开锁记录',openRecord.bind(marker)));
+
+		marker.addContextMenu(markerMenu);
+		addClickHandler(content,marker);
+	}
+
+	//for test
+	//markLockOnBaiduMap(116.406605,39.921585,"fuck your ass");
+	//markLockOnBaiduMap(116.412222,39.912345,"fuck your ass again");
+
+	function addClickHandler(content,marker){
+		marker.addEventListener("click",function(e){
+			openInfo(content,e)}
+		);
+	}
+	function openInfo(content,e){
+		var p = e.target;
+		var point = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+		var infoWindow = new BMap.InfoWindow(content,opts);  // 创建信息窗口对象 
+		map.openInfoWindow(infoWindow,point); //开启信息窗口
+	}
+</script>
