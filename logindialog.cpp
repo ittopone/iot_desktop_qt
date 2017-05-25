@@ -168,12 +168,23 @@ void LoginDialog::on_action_softReg()
 }
 void LoginDialog::on_btnOk_clicked()
 {
-    if(Global::m_isRegister)
-    {//软件已注册
-        MainWindow * mainWindow = new MainWindow;
-        this->hide();
-        mainWindow->show();
-    }
-    else
+    if(! Global::m_isRegister)
+    {
         myHelper::ShowMessageBoxError("请先注册软件！");
+        return;
+    }
+    if("admin" != ui->lineEdit_2->text())
+    {
+        myHelper::ShowMessageBoxError("昵称错误！");
+        return;
+    }
+    if("12345678" != ui->lineEdit_3->text())
+    {
+        myHelper::ShowMessageBoxError("密码错误！");
+        return;
+    }
+
+    MainWindow * mainWindow = new MainWindow;
+    this->hide();
+    mainWindow->show();
 }
