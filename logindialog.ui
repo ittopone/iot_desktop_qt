@@ -271,7 +271,7 @@
            <item>
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>名称：</string>
+              <string>昵称：</string>
              </property>
             </widget>
            </item>

@@ -3,13 +3,6 @@
 
 #include <QString>
 
-//否
-#define IT_IS_FALSE 0x00
-//是
-#define IT_IS_TRUE 0x01
-//未知
-#define IT_IS_UNKNOW 0x02
-
 class Global
 {
 public:

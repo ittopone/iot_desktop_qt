@@ -3,6 +3,8 @@
 #include "iconhelper.h"
 #include "myhelper.h"
 #include "mainwindow.h"
+#include "global.h"
+#include "softregdialog.h"
 
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),
@@ -34,6 +36,8 @@ LoginDialog::LoginDialog(QWidget *parent) :
     connect(ui->btnCancel, SIGNAL(clicked()), this, SLOT(close()));
     //窗体居中显示
     myHelper::FormInCenter(this);
+    //菜单初始化
+    this->initMenu();
 }
 
 LoginDialog::~LoginDialog()
@@ -67,9 +71,109 @@ void LoginDialog::mouseReleaseEvent(QMouseEvent *e)
     m_mousePressed = false;
 }
 
+//初始化菜单
+void LoginDialog::initMenu()
+{
+    //检测软件是否已经注册
+    this->detectSoftRegister();
+
+    m_menu = new QMenu();
+
+    if(Global::m_isRegister)
+        m_softReg = new QAction(tr("已注册"), this);
+    else
+        m_softReg = new QAction(tr("软件注册"), this);
+
+    m_menu->addAction(m_softReg);
+    ui->btnMenu->setMenu(m_menu);
+
+    #if 0
+    //去除小箭头
+    ui->btnMenu->setStyleSheet("QPushButton::menu-indicator{image:none}");
+    #else
+    //采用系统默认菜单按钮图标，并将其居中显示
+    ui->btnMenu->setStyleSheet("QPushButton::menu-indicator{subcontrol-position:center;subcontrol-origin: padding;}");
+    #endif
+
+    //软件注册菜单动作触发
+    connect(this->m_softReg, SIGNAL(triggered()), this, SLOT(on_action_softReg()));
+}
+//检测软件是否已经注册
+void LoginDialog::detectSoftRegister()
+{
+    //读注册码并进行校验
+    QFile fileSoftReg("registerCode.ini");
+    if (fileSoftReg.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QTextStream in(&fileSoftReg);
+        for(int lineNum = 0; !in.atEnd(); lineNum++)
+        {
+            QString registerCode = in.readLine();
+            qDebug() << "registerCode:" << registerCode;
+            if(0 == lineNum)
+            {
+                QString cpuid;
+                Global::getCPUID(cpuid);
+                cpuid.append("yjw");
+                QByteArray byte_array;
+                byte_array.append(cpuid);
+                qDebug() << tr("about to code to md5:") << byte_array;
+                QByteArray hash_byte_array = QCryptographicHash::hash(byte_array, QCryptographicHash::Md5);
+                QString md5 = hash_byte_array.toHex();
+
+                qDebug() << tr("md5:") << md5;
+
+                QStringList strList = registerCode.split("-");
+                QString inputMD5;
+                for(int i=0; i < strList.size(); i++)
+                {
+                    inputMD5.append(strList.at(i));
+                }
+
+                qDebug() << tr("input md5:") << inputMD5;
+
+                if(inputMD5.isEmpty()||inputMD5.isNull())
+                {
+                    Global::m_isRegister = false;
+                }
+
+                if(inputMD5 != md5)
+                {
+                    Global::m_isRegister = false;
+                }
+                else
+                {
+                    Global::m_isRegister = true;
+                }
+            }
+        }
+
+        fileSoftReg.close();
+    }
+}
+//软件注册（槽）
+void LoginDialog::on_action_softReg()
+{
+    if(Global::m_isRegister)
+        return;//软件已注册
+
+    //打开软件注册窗口
+    SoftRegDialog * softRegDlg = new SoftRegDialog();
+    softRegDlg->exec();//显示窗口，并将该窗口设置为活动窗口
+
+    if(Global::m_isRegister)
+    {
+        m_softReg->setText(tr("已注册"));
+    }
+}
 void LoginDialog::on_btnOk_clicked()
 {
-    MainWindow * mainWindow = new MainWindow;
-    this->hide();
-    mainWindow->show();
+    if(Global::m_isRegister)
+    {//软件已注册
+        MainWindow * mainWindow = new MainWindow;
+        this->hide();
+        mainWindow->show();
+    }
+    else
+        myHelper::ShowMessageBoxError("请先注册软件！");
 }
