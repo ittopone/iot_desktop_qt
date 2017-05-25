@@ -139,6 +139,7 @@ typedef struct
 //电能脉冲输出通道开关结构体定义
 typedef struct
 {
+    u8 eepsx;
     bool eeps1;//1路电能脉冲输出
     bool eeps2;//2路电能脉冲输出
     bool eeps3;//3路电能脉冲输出

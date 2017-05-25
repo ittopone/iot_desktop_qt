@@ -363,6 +363,18 @@ void MainWindow::acceptedOfDCM(const QByteArray &data)
             myHelper::ShowMessageBoxInfo("设置失败");
         }
             break;
+        case DCM_CID2_SET_EE_PULSE_SWITCH://设置电能脉冲输出通道开关
+        {
+            if(1 == m_DCM_ee_pulse_switch.eepsx)
+                m_DCM_ee_pulse_switch.eeps1 = !(m_DCM_ee_pulse_switch.eeps1);
+            else if(2 == m_DCM_ee_pulse_switch.eepsx)
+                m_DCM_ee_pulse_switch.eeps2 = !(m_DCM_ee_pulse_switch.eeps2);
+            else if(3 == m_DCM_ee_pulse_switch.eepsx)
+                m_DCM_ee_pulse_switch.eeps3 = !(m_DCM_ee_pulse_switch.eeps3);
+            else if(4 == m_DCM_ee_pulse_switch.eepsx)
+                m_DCM_ee_pulse_switch.eeps4 = !(m_DCM_ee_pulse_switch.eeps4);
+        }
+            break;
         default:
             break;
         }
@@ -865,6 +877,38 @@ void MainWindow::acceptedOfDCM(const QByteArray &data)
             ui->pushButton_49->setIcon(QIcon(":/image/switch_on.png"));
         else
             ui->pushButton_49->setIcon(QIcon(":/image/switch_off.png"));
+    }
+        break;
+    case DCM_CID2_SET_EE_PULSE_SWITCH://设置电能脉冲输出通道
+    {
+        if(1 == m_DCM_ee_pulse_switch.eepsx)
+        {
+            if(m_DCM_ee_pulse_switch.eeps1)
+                ui->pushButton_50->setIcon(QIcon(":/image/switch_on.png"));
+            else
+                ui->pushButton_50->setIcon(QIcon(":/image/switch_off.png"));
+        }
+        else if(2 == m_DCM_ee_pulse_switch.eepsx)
+        {
+            if(m_DCM_ee_pulse_switch.eeps2)
+                ui->pushButton_47->setIcon(QIcon(":/image/switch_on.png"));
+            else
+                ui->pushButton_47->setIcon(QIcon(":/image/switch_off.png"));
+        }
+        else if(3 == m_DCM_ee_pulse_switch.eepsx)
+        {
+            if(m_DCM_ee_pulse_switch.eeps3)
+                ui->pushButton_48->setIcon(QIcon(":/image/switch_on.png"));
+            else
+                ui->pushButton_48->setIcon(QIcon(":/image/switch_off.png"));
+        }
+        else if(4 == m_DCM_ee_pulse_switch.eepsx)
+        {
+            if(m_DCM_ee_pulse_switch.eeps4)
+                ui->pushButton_49->setIcon(QIcon(":/image/switch_on.png"));
+            else
+                ui->pushButton_49->setIcon(QIcon(":/image/switch_off.png"));
+        }
     }
         break;
     default:
@@ -1545,22 +1589,110 @@ void MainWindow::on_pushButton_52_clicked()
 /*DCM设置1路电能脉冲输出通道开关*/
 void MainWindow::on_pushButton_50_clicked()
 {
-
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            m_DCM_ee_pulse_switch.eeps1 = !(m_DCM_ee_pulse_switch.eeps1);
+            m_DCM_ee_pulse_switch.eepsx = 1;
+            //发送设置1路电能脉冲输出通道开关指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_ee_pulse_switch(ADR, protocol,&m_DCM_ee_pulse_switch);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置1路电能脉冲输出通道开关)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
 }
 /*DCM设置2路电能脉冲输出通道开关*/
 void MainWindow::on_pushButton_47_clicked()
 {
-
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            m_DCM_ee_pulse_switch.eeps2 = !(m_DCM_ee_pulse_switch.eeps2);
+            m_DCM_ee_pulse_switch.eepsx = 2;
+            //发送设置2路电能脉冲输出通道开关指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_ee_pulse_switch(ADR, protocol,&m_DCM_ee_pulse_switch);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置2路电能脉冲输出通道开关)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
 }
 /*DCM设置3路电能脉冲输出通道开关*/
 void MainWindow::on_pushButton_48_clicked()
 {
-
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            m_DCM_ee_pulse_switch.eeps3 = !(m_DCM_ee_pulse_switch.eeps3);
+            m_DCM_ee_pulse_switch.eepsx = 3;
+            //发送设置3路电能脉冲输出通道开关指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_ee_pulse_switch(ADR, protocol,&m_DCM_ee_pulse_switch);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置3路电能脉冲输出通道开关)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
 }
 /*DCM设置4路电能脉冲输出通道开关*/
 void MainWindow::on_pushButton_49_clicked()
 {
-
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            m_DCM_ee_pulse_switch.eeps4 = !(m_DCM_ee_pulse_switch.eeps4);
+            m_DCM_ee_pulse_switch.eepsx = 4;
+            //发送设置4路电能脉冲输出通道开关指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_ee_pulse_switch(ADR, protocol,&m_DCM_ee_pulse_switch);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置4路电能脉冲输出通道开关)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
 }
 /***********************************DCM end******************************/
 
