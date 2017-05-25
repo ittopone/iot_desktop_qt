@@ -348,6 +348,21 @@ void MainWindow::acceptedOfDCM(const QByteArray &data)
             }
         }
             break;
+        case DCM_CID2_SET_SENSOR_ARGS://设置传感器参数
+        {
+            myHelper::ShowMessageBoxInfo("设置失败");
+        }
+            break;
+        case DCM_CID2_SET_READ_METER_DAY://设置抄表日
+        {
+            myHelper::ShowMessageBoxInfo("设置失败");
+        }
+            break;
+        case YD_CID2_SET_SYS_INT_ARGS://设置系统参数
+        {
+            myHelper::ShowMessageBoxInfo("设置失败");
+        }
+            break;
         default:
             break;
         }
@@ -781,6 +796,77 @@ void MainWindow::acceptedOfDCM(const QByteArray &data)
         ui->lineEdit_3->setText(tr("%1").arg(st_sensor_args.sensorPrimRangeMax));
     }
         break;
+    case DCM_CID2_SET_SENSOR_ARGS://设置传感器参数
+    {
+        myHelper::ShowMessageBoxInfo("设置成功");
+    }
+        break;
+    case DCM_CID2_GET_READ_METER_DAY://获取抄表日
+    {
+        //解析结构体st_ydt中的数据
+        st_DCM_read_meter_day st_read_meter_day;
+        DevDirCurMeter::DCM_get_read_meter_day(&st_read_meter_day, &st_ydt);
+        //更新到UI
+        ui->spinBox->setValue(st_read_meter_day.day);//日
+        ui->spinBox_3->setValue(st_read_meter_day.hour);//时
+    }
+        break;
+    case DCM_CID2_SET_READ_METER_DAY://设置抄表日
+    {
+        myHelper::ShowMessageBoxInfo("设置成功");
+    }
+        break;
+    case DCM_CID2_METER_CALIBRATION://表校准
+    {
+        if(st_ydt.INFO[0])
+        {//操作成功
+            myHelper::ShowMessageBoxInfo("操作成功");
+        }
+        else
+        {//操作失败
+            myHelper::ShowMessageBoxError("操作失败");
+        }
+    }
+        break;
+    case YD_CID2_GET_SYS_INT_ARGS://获取系统参数
+    {
+        //解析结构体st_ydt中的数据
+        st_DCM_sys_args st_sys_args;
+        DevDirCurMeter::DCM_get_sys_args(&st_sys_args, &st_ydt);
+        //更新到UI
+        ui->lineEdit_4->setText(tr("%1").arg(st_sys_args.overV));
+        ui->lineEdit_5->setText(tr("%1").arg(st_sys_args.lackV));
+        ui->lineEdit_6->setText(tr("%1").arg(st_sys_args.overI));
+    }
+        break;
+    case YD_CID2_SET_SYS_INT_ARGS://设置系统参数
+    {
+         myHelper::ShowMessageBoxInfo("设置成功");
+    }
+        break;
+    case DCM_CID2_GET_EE_PULSE_SWITCH://获取电能脉冲输出通道开关
+    {
+        //解析结构体st_ydt中的数据
+        DevDirCurMeter::DCM_get_ee_pulse_switch(&m_DCM_ee_pulse_switch, &st_ydt);
+        //更新到UI
+        if(m_DCM_ee_pulse_switch.eeps1)
+            ui->pushButton_50->setIcon(QIcon(":/image/switch_on.png"));
+        else
+            ui->pushButton_50->setIcon(QIcon(":/image/switch_off.png"));
+        if(m_DCM_ee_pulse_switch.eeps2)
+            ui->pushButton_47->setIcon(QIcon(":/image/switch_on.png"));
+        else
+            ui->pushButton_47->setIcon(QIcon(":/image/switch_off.png"));
+        if(m_DCM_ee_pulse_switch.eeps3)
+            ui->pushButton_48->setIcon(QIcon(":/image/switch_on.png"));
+        else
+            ui->pushButton_48->setIcon(QIcon(":/image/switch_off.png"));
+        if(m_DCM_ee_pulse_switch.eeps4)
+            ui->pushButton_49->setIcon(QIcon(":/image/switch_on.png"));
+        else
+            ui->pushButton_49->setIcon(QIcon(":/image/switch_off.png"));
+    }
+        break;
     default:
         break;
     }
@@ -1197,32 +1283,284 @@ void MainWindow::on_pushButton_21_clicked()
 /*DCM设置电表传感器参数*/
 void MainWindow::on_pushButton_22_clicked()
 {
-    st_DCM_sensor_args st_sensor_args;
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            st_DCM_sensor_args st_sensor_args;
 
-    if(ui->radioButton_20->isChecked())
-        st_sensor_args.sensorType = 0;
-    else
-        st_sensor_args.sensorType = 1;
+            if(ui->radioButton_20->isChecked())
+                st_sensor_args.sensorType = 0;
+            else
+                st_sensor_args.sensorType = 1;
 
-    bool ok = false;
-    st_sensor_args.sensorPrimRange = ui->lineEdit->text().trimmed().toInt(&ok, 10);
-    if(!ok)
-    {
-        myHelper::ShowMessageBoxError("设置失败，参数错误");
-        return;
+            bool ok = false;
+            st_sensor_args.sensorPrimRange = ui->lineEdit->text().trimmed().toInt(&ok, 10);
+            if(!ok)
+            {
+                myHelper::ShowMessageBoxError("设置失败，参数错误");
+                return;
+            }
+           st_sensor_args.sensorPrimRangeMin = ui->lineEdit_2->text().trimmed().toInt(&ok, 10);
+           if(!ok)
+           {
+               myHelper::ShowMessageBoxError("设置失败，参数错误");
+               return;
+           }
+           st_sensor_args.sensorPrimRangeMax = ui->lineEdit_3->text().trimmed().toInt(&ok, 10);
+           if(!ok)
+           {
+               myHelper::ShowMessageBoxError("设置失败，参数错误");
+               return;
+           }
+
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送设置电表传感器参数指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_sensor_args(ADR, protocol, &st_sensor_args);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置电表传感器参数)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
     }
-   st_sensor_args.sensorPrimRangeMin = ui->lineEdit_2->text().trimmed().toInt(&ok, 10);
-   if(!ok)
-   {
-       myHelper::ShowMessageBoxError("设置失败，参数错误");
-       return;
-   }
-   st_sensor_args.sensorPrimRangeMax = ui->lineEdit_3->text().trimmed().toInt(&ok, 10);
-   if(!ok)
-   {
-       myHelper::ShowMessageBoxError("设置失败，参数错误");
-       return;
-   }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM获取抄表日*/
+void MainWindow::on_pushButton_23_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送获取抄表日指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_get_read_meter_day(ADR, protocol);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(获取抄表日)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM设置抄表日*/
+void MainWindow::on_pushButton_24_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            st_DCM_read_meter_day st_read_meter_day;
+            st_read_meter_day.day = ui->spinBox->value();
+            st_read_meter_day.hour = ui->spinBox_3->value();
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送设置抄表日指令
+            #if 0
+            u8 ADR = ui->spinBox_4->value();
+            #else
+            u8 ADR = 0x00;
+            #endif
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_read_meter_day(ADR, protocol, &st_read_meter_day);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置抄表日)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM取消表校准*/
+void MainWindow::on_pushButton_25_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送取消表校准指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_meter_calibration(ADR, protocol, 0x00);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(取消表校准)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM启动表校准*/
+void MainWindow::on_pushButton_26_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送启动表校准指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_meter_calibration(ADR, protocol, 0x01);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(启动表校准)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM获取系统参数*/
+void MainWindow::on_pushButton_27_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送获取系统参数指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_get_sys_args(ADR, protocol);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(获取系统参数)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM设置系统参数*/
+void MainWindow::on_pushButton_46_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            st_DCM_sys_args st_sys_args;
+            bool ok = false;
+            st_sys_args.overV = ui->lineEdit_4->text().trimmed().toFloat(&ok);
+            if(!ok)
+            {
+                myHelper::ShowMessageBoxError("参数填写错误");
+                return;
+            }
+            st_sys_args.lackV = ui->lineEdit_5->text().trimmed().toFloat(&ok);
+            if(!ok)
+            {
+                myHelper::ShowMessageBoxError("参数填写错误");
+                return;
+            }
+            st_sys_args.overI = ui->lineEdit_6->text().trimmed().toFloat(&ok);
+            if(!ok)
+            {
+                myHelper::ShowMessageBoxError("参数填写错误");
+                return;
+            }
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送设置系统参数指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_set_sys_args(ADR, protocol, &st_sys_args);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(设置系统参数)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM获取电能脉冲输出通道开关*/
+void MainWindow::on_pushButton_52_clicked()
+{
+    if(DevDirCurMeter::DCM_startMonitorDev)
+    {//监控已开启
+        if(! DevDirCurMeter::DCM_is_busy)
+        {//串口空闲
+            u8 protocol[YD_MAX_LEN_PACK + 1] = {0};
+            //发送获取电能脉冲输出通道开关指令
+            u8 ADR = ui->spinBox_4->value();
+            DevDirCurMeter::DCM_is_busy = true;//设置串口正忙标志
+            DevDirCurMeter::DCM_cur_cmd = DevDirCurMeter::DCM_cmd_get_ee_pulse_switch(ADR, protocol);
+            m_sp_DCM.send(QByteArray((char*)protocol));
+            ui->textEdit_2->append("S:" + QString((char*)protocol) + "(获取电能脉冲输出通道开关)");
+        }
+        else
+        {//串口正忙
+            myHelper::ShowMessageBoxError("串口正忙，请重试");
+        }
+    }
+    else
+    {//监控已关闭
+        myHelper::ShowMessageBoxError("监控已关闭，请先开启再重试");
+    }
+}
+
+/*DCM设置1路电能脉冲输出通道开关*/
+void MainWindow::on_pushButton_50_clicked()
+{
+
+}
+/*DCM设置2路电能脉冲输出通道开关*/
+void MainWindow::on_pushButton_47_clicked()
+{
+
+}
+/*DCM设置3路电能脉冲输出通道开关*/
+void MainWindow::on_pushButton_48_clicked()
+{
+
+}
+/*DCM设置4路电能脉冲输出通道开关*/
+void MainWindow::on_pushButton_49_clicked()
+{
+
 }
 /***********************************DCM end******************************/
 
@@ -1283,6 +1621,4 @@ void MainWindow::on_timerSerialPort_timeout()
     /**************************DCM设备 end***********************************/
 }
 /***********************************串口 end******************************/
-
-
 

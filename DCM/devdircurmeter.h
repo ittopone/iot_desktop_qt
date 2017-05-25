@@ -13,6 +13,16 @@
 #define DCM_CID2_GET_SENSOR_ARGS 0x83
 //设置电表传感器参数
 #define DCM_CID2_SET_SENSOR_ARGS 0x82
+//获取抄表日
+#define DCM_CID2_GET_READ_METER_DAY 0x84
+//设置抄表日
+#define DCM_CID2_SET_READ_METER_DAY 0x85
+//表校准
+#define DCM_CID2_METER_CALIBRATION 0x86
+//设置电能脉冲输出通道开关
+#define DCM_CID2_SET_EE_PULSE_SWITCH 0x91
+//获取电能脉冲输出通道开关
+#define DCM_CID2_GET_EE_PULSE_SWITCH 0x92
 
 //获取模拟量定点数结构体定义
 typedef struct
@@ -111,6 +121,30 @@ typedef struct
     u16 sensorPrimRangeMax;//传感器初级量程最大值
 }st_DCM_sensor_args,*pst_DCM_sensor_args;
 
+//抄表日结构体定义
+typedef struct
+{
+    u8 day;
+    u8 hour;
+}st_DCM_read_meter_day,*pst_DCM_read_meter_day;
+
+//系统参数结构体定义
+typedef struct
+{
+    float overV;//过压
+    float lackV;//欠压
+    float overI;//过流
+}st_DCM_sys_args,*pst_DCM_sys_args;
+
+//电能脉冲输出通道开关结构体定义
+typedef struct
+{
+    bool eeps1;//1路电能脉冲输出
+    bool eeps2;//2路电能脉冲输出
+    bool eeps3;//3路电能脉冲输出
+    bool eeps4;//4路电能脉冲输出
+}st_DCM_ee_pulse_switch,*pst_DCM_ee_pulse_switch;
+
 class DevDirCurMeter
 {
 public:
@@ -154,6 +188,23 @@ public:
     static void DCM_get_sensor_args(pst_DCM_sensor_args pst_sensor_args, pst_ydt136332005 pst_ydt);
     //设置传感器参数
     static u8 DCM_cmd_set_sensor_args(u8 ADR, u8 * protocol, pst_DCM_sensor_args pst_sensor_args);
+    //获取抄表日
+    static u8 DCM_cmd_get_read_meter_day(u8 ADR, u8 * protocol);
+    static void DCM_get_read_meter_day(pst_DCM_read_meter_day pst_read_meter_day, pst_ydt136332005 pst_ydt);
+    //设置抄表日
+    static u8 DCM_cmd_set_read_meter_day(u8 ADR, u8 * protocol, pst_DCM_read_meter_day pst_read_meter_day);
+    //表校准
+    static u8 DCM_cmd_meter_calibration(u8 ADR, u8 * protocol, u8 opt);
+    //获取系统参数
+    static u8 DCM_cmd_get_sys_args(u8 ADR, u8 * protocol);
+    static void DCM_get_sys_args(pst_DCM_sys_args pst_sys_args, pst_ydt136332005 pst_ydt);
+    //设置系统参数
+    static u8 DCM_cmd_set_sys_args(u8 ADR, u8 * protocol, pst_DCM_sys_args pst_sys_args);
+    //获取电能脉冲输出通道开关
+    static u8 DCM_cmd_get_ee_pulse_switch(u8 ADR, u8 * protocol);
+    static void DCM_get_ee_pulse_switch(pst_DCM_ee_pulse_switch pst_ee_pulse_switch, pst_ydt136332005 pst_ydt);
+    //设置电能脉冲输出通道开关
+    static u8 DCM_cmd_set_ee_pulse_switch(u8 ADR, u8 * protocol, pst_DCM_ee_pulse_switch pst_ee_pulse_switch);
 };
 
 #endif // DEVDIRCURMETER_H

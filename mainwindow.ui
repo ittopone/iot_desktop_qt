@@ -7656,67 +7656,11 @@ color: rgb(255, 255, 255);</string>
                          </layout>
                         </item>
                         <item>
-                         <layout class="QHBoxLayout" name="horizontalLayout_75">
-                          <item>
-                           <widget class="QLabel" name="label_87">
-                            <property name="text">
-                             <string>5路电能脉冲输出通道：</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_51">
-                            <property name="minimumSize">
-                             <size>
-                              <width>76</width>
-                              <height>46</height>
-                             </size>
-                            </property>
-                            <property name="maximumSize">
-                             <size>
-                              <width>76</width>
-                              <height>46</height>
-                             </size>
-                            </property>
-                            <property name="autoFillBackground">
-                             <bool>false</bool>
-                            </property>
-                            <property name="styleSheet">
-                             <string notr="true">background-color: rgb(255, 255, 255);</string>
-                            </property>
-                            <property name="text">
-                             <string/>
-                            </property>
-                            <property name="icon">
-                             <iconset resource="resource.qrc">
-                              <normaloff>:/image/switch_off.png</normaloff>:/image/switch_off.png</iconset>
-                            </property>
-                            <property name="iconSize">
-                             <size>
-                              <width>72</width>
-                              <height>72</height>
-                             </size>
-                            </property>
-                            <property name="flat">
-                             <bool>false</bool>
-                            </property>
-                           </widget>
-                          </item>
-                         </layout>
-                        </item>
-                        <item>
                          <layout class="QHBoxLayout" name="horizontalLayout_76">
                           <item>
                            <widget class="QPushButton" name="pushButton_52">
                             <property name="text">
                              <string>获取</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item>
-                           <widget class="QPushButton" name="pushButton_53">
-                            <property name="text">
-                             <string>设置</string>
                             </property>
                            </widget>
                           </item>
@@ -7825,7 +7769,14 @@ color: rgb(255, 255, 255);</string>
                            </widget>
                           </item>
                           <item>
-                           <widget class="QSpinBox" name="spinBox"/>
+                           <widget class="QSpinBox" name="spinBox">
+                            <property name="minimum">
+                             <number>1</number>
+                            </property>
+                            <property name="maximum">
+                             <number>28</number>
+                            </property>
+                           </widget>
                           </item>
                          </layout>
                         </item>
@@ -7839,7 +7790,11 @@ color: rgb(255, 255, 255);</string>
                            </widget>
                           </item>
                           <item>
-                           <widget class="QSpinBox" name="spinBox_3"/>
+                           <widget class="QSpinBox" name="spinBox_3">
+                            <property name="maximum">
+                             <number>23</number>
+                            </property>
+                           </widget>
                           </item>
                          </layout>
                         </item>

@@ -68,7 +68,8 @@ private slots:
 private:
     JasonQt_SerialPort m_sp_DCM;//直流电表连接的串口
     st_DCM_switch_state m_DCM_switch_state;//DCM开关状态
-    u8 m_DCMmonFreezeEEcurMon;
+    st_DCM_ee_pulse_switch m_DCM_ee_pulse_switch;//DCM电能脉冲输出通道开关
+    u8 m_DCMmonFreezeEEcurMon;//当前月冻结电能的月数
     void refreshSerialPortNameOfDCM();//刷新DCM串口名称
 private slots:
     void acceptedOfDCM(const QByteArray &data);
@@ -88,6 +89,17 @@ private slots:
     void on_pushButton_19_clicked();//DCM获取日电能记录
     void on_pushButton_21_clicked();//DCM获取电表传感器参数
     void on_pushButton_22_clicked();//DCM设置电表传感器参数
+    void on_pushButton_23_clicked();//DCM获取抄表日
+    void on_pushButton_24_clicked();//DCM设置抄表日
+    void on_pushButton_25_clicked();//DCM取消表校准
+    void on_pushButton_26_clicked();//DCM启动表校准
+    void on_pushButton_27_clicked();//DCM获取系统参数
+    void on_pushButton_46_clicked();//DCM设置系统参数
+    void on_pushButton_52_clicked();//DCM获取电能脉冲输出通道开关
+    void on_pushButton_50_clicked();//DCM设置1路电能脉冲输出通道开关
+    void on_pushButton_47_clicked();//DCM设置2路电能脉冲输出通道开关
+    void on_pushButton_48_clicked();//DCM设置3路电能脉冲输出通道开关
+    void on_pushButton_49_clicked();//DCM设置4路电能脉冲输出通道开关
     /*********************************DCM end***********************************/
 
     /*********************************BMS start***********************************/
@@ -99,8 +111,6 @@ private slots:
     /*********************************串口 end***********************************/
 
     /*********************************信号 start***************************************/
-
-
 
 signals:
     /*********************************信号 end******************************************/

@@ -616,3 +616,191 @@ u8 DevDirCurMeter::DCM_cmd_set_sensor_args(u8 ADR, u8 * protocol, pst_DCM_sensor
 
     return DCM_CID2_SET_SENSOR_ARGS;
 }
+
+//获取抄表日
+u8 DevDirCurMeter::DCM_cmd_get_read_meter_day(u8 ADR, u8 * protocol)
+{
+    st_ydt136332005 st_ydt;
+
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, DCM_CID2_GET_READ_METER_DAY, NULL, 0);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return DCM_CID2_GET_READ_METER_DAY;
+}
+void DevDirCurMeter::DCM_get_read_meter_day(pst_DCM_read_meter_day pst_read_meter_day, pst_ydt136332005 pst_ydt)
+{
+    pst_read_meter_day->day = pst_ydt->INFO[0];
+    pst_read_meter_day->hour = pst_ydt->INFO[1];
+}
+
+//设置抄表日
+u8 DevDirCurMeter::DCM_cmd_set_read_meter_day(u8 ADR, u8 * protocol, pst_DCM_read_meter_day pst_read_meter_day)
+{
+    u8 info[3] = {0};
+    st_ydt136332005 st_ydt;
+
+    info[0] = pst_read_meter_day->day;
+    info[1] = pst_read_meter_day->hour;
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, DCM_CID2_SET_READ_METER_DAY, info, 2);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return DCM_CID2_SET_READ_METER_DAY;
+}
+
+//表校准
+u8 DevDirCurMeter::DCM_cmd_meter_calibration(u8 ADR, u8 * protocol, u8 opt)
+{
+    u8 info[2] = {0};
+    st_ydt136332005 st_ydt;
+
+    info[0] = opt;
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, DCM_CID2_METER_CALIBRATION, info, 1);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return DCM_CID2_METER_CALIBRATION;
+}
+//获取系统参数
+u8 DevDirCurMeter::DCM_cmd_get_sys_args(u8 ADR, u8 * protocol)
+{
+    st_ydt136332005 st_ydt;
+
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, YD_CID2_GET_SYS_INT_ARGS, NULL, 0);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return YD_CID2_GET_SYS_INT_ARGS;
+}
+void DevDirCurMeter::DCM_get_sys_args(pst_DCM_sys_args pst_sys_args, pst_ydt136332005 pst_ydt)
+{
+    char temp[3] = {0};
+    u8 offset = 0;
+
+    YD_T_1363_3_2005::my_strncpy(temp, (char*)(pst_ydt->INFO) + offset, 2);
+    pst_sys_args->overV = YD_T_1363_3_2005::bytes2u16((u8*)temp) / 10.0;
+    offset += 2;
+    YD_T_1363_3_2005::my_strncpy(temp, (char*)(pst_ydt->INFO) + offset, 2);
+    pst_sys_args->lackV = YD_T_1363_3_2005::bytes2u16((u8*)temp) / 10.0;
+    offset += 2;
+    YD_T_1363_3_2005::my_strncpy(temp, (char*)(pst_ydt->INFO) + offset, 2);
+    pst_sys_args->overI = YD_T_1363_3_2005::bytes2u16((u8*)temp) / 100.00;
+    offset += 2;
+}
+
+//设置系统参数
+u8 DevDirCurMeter::DCM_cmd_set_sys_args(u8 ADR, u8 * protocol, pst_DCM_sys_args pst_sys_args)
+{
+    u8 info[7] = {0};
+    u8 offset = 0;
+    st_ydt136332005 st_ydt;
+
+    YD_T_1363_3_2005::u162bytes(info + offset, (u16)(pst_sys_args->overV * 10));
+    offset += 2;
+    YD_T_1363_3_2005::u162bytes(info + offset, (u16)(pst_sys_args->lackV * 10));
+    offset += 2;
+    YD_T_1363_3_2005::u162bytes(info + offset, (u16)(pst_sys_args->overI * 100));
+    offset += 2;
+
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, YD_CID2_SET_SYS_INT_ARGS, info, 6);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return YD_CID2_SET_SYS_INT_ARGS;
+}
+
+//获取电能脉冲输出通道开关
+u8 DevDirCurMeter::DCM_cmd_get_ee_pulse_switch(u8 ADR, u8 * protocol)
+{
+    st_ydt136332005 st_ydt;
+
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, DCM_CID2_GET_EE_PULSE_SWITCH, NULL, 0);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return DCM_CID2_GET_EE_PULSE_SWITCH;
+}
+void DevDirCurMeter::DCM_get_ee_pulse_switch(pst_DCM_ee_pulse_switch pst_ee_pulse_switch, pst_ydt136332005 pst_ydt)
+{
+    u8 i = 0;
+
+    for(i = 0; i < 4; i++)
+    {
+        switch (i)
+        {
+        case 0:
+            if((pst_ydt->INFO[0] >> i) & 0x01)
+                pst_ee_pulse_switch->eeps1= true;
+            else
+                pst_ee_pulse_switch->eeps1 = false;
+            break;
+        case 1:
+            if((pst_ydt->INFO[0] >> i) & 0x01)
+                pst_ee_pulse_switch->eeps2 = true;
+            else
+                pst_ee_pulse_switch->eeps2 = false;
+            break;
+        case 2:
+            if((pst_ydt->INFO[0] >> i) & 0x01)
+                pst_ee_pulse_switch->eeps3 = true;
+            else
+                pst_ee_pulse_switch->eeps3 = false;
+            break;
+        case 3:
+            if((pst_ydt->INFO[0] >> i) & 0x01)
+                pst_ee_pulse_switch->eeps4 = true;
+            else
+                pst_ee_pulse_switch->eeps4 = false;
+            break;
+        default:
+            break;
+        }
+    }
+}
+//设置电能脉冲输出通道开关
+u8 DevDirCurMeter::DCM_cmd_set_ee_pulse_switch(u8 ADR, u8 * protocol, pst_DCM_ee_pulse_switch pst_ee_pulse_switch)
+{
+    st_ydt136332005 st_ydt;
+    u8 info[2] = {0};
+    u8 i = 0;
+
+    for(i = 0; i < 4; i++)
+    {
+        switch (i)
+        {
+        case 0:
+            if(pst_ee_pulse_switch->eeps1)
+                info[0] |= 0x01;
+            else
+                info[0] &= 0xfe;
+            break;
+        case 1:
+            if(pst_ee_pulse_switch->eeps2)
+                info[0] |= 0x02;
+            else
+                info[0] &= 0xfd;
+            break;
+        case 2:
+            if(pst_ee_pulse_switch->eeps3)
+                info[0] |= 0x04;
+            else
+                info[0] &= 0xfb;
+            break;
+        case 3:
+            if(pst_ee_pulse_switch->eeps4)
+                info[0] |= 0x08;
+            else
+                info[0] &= 0xf7;
+            break;
+        default:
+            break;
+        }
+    }
+
+    memset(&st_ydt, 0, LEN_ST_YDT);
+    YD_T_1363_3_2005::stInit(&st_ydt, ADR, YD_CID1_DIRCURMETER, DCM_CID2_SET_EE_PULSE_SWITCH, info, 1);
+    YD_T_1363_3_2005::packProtocol(&st_ydt, protocol);
+
+    return DCM_CID2_SET_EE_PULSE_SWITCH;
+}
